@@ -2,7 +2,7 @@ import React from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { mockIncidents } from '../data/mockIncidents';
+import { useIncidents } from '../context/IncidentContext';
 
 // Fix for default Leaflet icon issues in React
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -25,8 +25,10 @@ const createCustomIcon = (color: string) => {
 const highPriorityIcon = createCustomIcon('#ef4444'); // red-500
 const mediumPriorityIcon = createCustomIcon('#eab308'); // yellow-500
 const lowPriorityIcon = createCustomIcon('#3b82f6'); // blue-500
+const resolvedIcon = createCustomIcon('#10b981'); // emerald-500
 
 export const IncidentMap: React.FC = () => {
+  const { incidents } = useIncidents();
   // Center roughly on Mumbai
   const center: [number, number] = [19.0760, 72.8777];
 
@@ -44,12 +46,14 @@ export const IncidentMap: React.FC = () => {
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
         
-        {mockIncidents.map((incident) => {
-          const icon = incident.priority === 'High' 
-            ? highPriorityIcon 
-            : incident.priority === 'Medium' 
-              ? mediumPriorityIcon 
-              : lowPriorityIcon;
+        {incidents.map((incident) => {
+          const icon = incident.status === 'Resolved'
+            ? resolvedIcon
+            : incident.priority === 'High' 
+              ? highPriorityIcon 
+              : incident.priority === 'Medium' 
+                ? mediumPriorityIcon 
+                : lowPriorityIcon;
 
           return (
             <Marker 

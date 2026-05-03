@@ -1,8 +1,10 @@
 import React from 'react';
-import { mockIncidents } from '../data/mockIncidents';
 import { AlertCircle, Clock, MapPin, Users, CheckCircle2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useIncidents } from '../context/IncidentContext';
 
 export const Sidebar: React.FC = () => {
+  const { incidents } = useIncidents();
   return (
     <div className="w-1/4 h-screen bg-surface border-r border-slate-700/50 flex flex-col shadow-2xl z-10 relative">
       <div className="p-6 border-b border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
@@ -14,16 +16,23 @@ export const Sidebar: React.FC = () => {
       </div>
       
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {mockIncidents.map((incident) => (
-          <div 
+        {incidents.map((incident) => (
+          <Link 
+            to={`/action-card/${incident.id}`}
             key={incident.id} 
-            className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4 hover:bg-slate-800/80 transition-all duration-200 cursor-pointer group hover:border-slate-600 shadow-lg"
+            className={`block bg-slate-800/40 border rounded-xl p-4 transition-all duration-200 cursor-pointer group shadow-lg ${
+              incident.status === 'Resolved' 
+                ? 'border-emerald-500/50 hover:bg-emerald-500/10' 
+                : 'border-slate-700/50 hover:bg-slate-800/80 hover:border-slate-600'
+            }`}
           >
             <div className="flex justify-between items-start mb-3">
               <span className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${
-                incident.status === 'Active' 
-                  ? 'bg-red-500/10 text-red-400 border-red-500/20' 
-                  : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                incident.status === 'Resolved'
+                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                  : incident.status === 'Active' 
+                    ? 'bg-red-500/10 text-red-400 border-red-500/20' 
+                    : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
               }`}>
                 {incident.status}
               </span>
@@ -47,7 +56,9 @@ export const Sidebar: React.FC = () => {
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center text-slate-400">
                   <Clock size={16} className="mr-2 text-slate-500" />
-                  <span className="font-mono text-slate-300">{incident.sla_timer}</span>
+                  <span className={`font-mono ${incident.status === 'Resolved' ? 'line-through text-slate-600 decoration-emerald-500/50' : 'text-slate-300'}`}>
+                    {incident.sla_timer}
+                  </span>
                 </div>
                 
                 <div className="flex items-center text-slate-400">
@@ -62,7 +73,7 @@ export const Sidebar: React.FC = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
       

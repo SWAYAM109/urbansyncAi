@@ -10,7 +10,8 @@ from src.core.rag_engine import RAGEngine
 from src.core.event_bus import EventBus
 from src.agents.water_agent import WaterAgent
 from src.agents.traffic_agent import TrafficAgent
-from src.routers import exotel
+from src.agents.power_agent import PowerAgent
+from src.routers import exotel, iot
 from pydantic import BaseModel
 
 global_event_bus = EventBus()
@@ -24,12 +25,15 @@ async def lifespan(app: FastAPI):
     # Initialize agents
     water_agent = WaterAgent(name="WaterAgent", event_bus=global_event_bus)
     traffic_agent = TrafficAgent(name="TrafficAgent", event_bus=global_event_bus)
+    power_agent = PowerAgent(name="PowerAgent", event_bus=global_event_bus)
     
     await water_agent.setup()
     await traffic_agent.setup()
+    await power_agent.setup()
     
-    # Inject event_bus into router
+    # Inject event_bus into routers
     exotel.event_bus = global_event_bus
+    iot.event_bus = global_event_bus
     
     print("--- EventBus and Agents Initialized ---")
     yield
@@ -41,8 +45,9 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="UrbanSync-AI Gateway", lifespan=lifespan)
 rag = RAGEngine()
 
-# Add Exotel router
+# Add routers
 app.include_router(exotel.router, prefix="/api/webhooks")
+app.include_router(iot.router, prefix="/api/webhooks/iot")
 
 # Schema for incoming search requests
 class QueryRequest(BaseModel):
